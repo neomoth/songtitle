@@ -30,7 +30,6 @@ body{
 	align-items:center;
 	text-align: var(--global-text-align);
 	gap: 8px;
-	white-space: nowrap;
 }
 .now-playing .top img{
 	height:var(--cover-art-height);
@@ -123,12 +122,14 @@ body{
 .scrolling-text {
     white-space: nowrap;
     display: inline-block;
-    font-size: 1.5em; /* Song title font size */
-    font-weight: bold; /* Make song title bold */
+    font-size: 1.5em;
+    font-weight: bold;
+    white-space: nowrap;
 }
 .scrolling-artist {
 	white-space: nowrap;
 	display: inline-block;
 	font-size: 1.2em;
 	text-align: var(--artist-text-align);
+	white-space: nowrap;
 }
