@@ -2,8 +2,7 @@ const isLoggedIn = document.cookie.includes('accessToken');
 if(!isLoggedIn) document.getElementById('loginModal').style.display="flex";
 console.log(isLoggedIn)
 const CLIENT_ID = '198a9772670340b198435b615c0f3e19';
-//const REDIRECT_URI = 'https://song.moth.li/oauth';
-const REDIRECT_URI = 'http://localhost:7394/oauth';
+const REDIRECT_URI = 'https://song.moth.li/oauth';
 const SCOPES = 'user-read-currently-playing user-read-playback-state';
 
 document.getElementById("loginButton").addEventListener("click", ()=>{
