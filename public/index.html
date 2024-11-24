@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport", content="width=device-width, initial-scale=1.0">
+	<title>Spotify Song Display</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div class="now-playing">
+		<div class="top">
+			<div>
+				<img id="cover" src="weestspin.gif">
+			</div>
+			<div>
+				<div class="scrolling-text-container" id="songContainer">
+					<div class="song-title scrolling-text" id="songTitle">Loading...</div>
+				</div>
+				<div class="scrolling-text-container" id="artistContainer">
+					<div id="songArtist" class="artist scrolling-artist"></div>
+				</div>
+			</div>
+		</div>
+		<div class="bottom">
+			<img id="status" src="pause.svg">
+			<div id="progress"></div>
+			<div class="progress-back"></div>
+		</div>
+	</div>
+
+	<!--modal-->
+	<div class="modal" id="loginModal">
+		<div class="modal-content">
+			<h2>Log in to Spotify</h2>
+			<p>You need to log in for this site to see what's playing.</p>
+			<button id="loginButton">Log In</button>
+		</div>
+	</div>
+	<script src="app.js"></script>
+</body>
+</html>
