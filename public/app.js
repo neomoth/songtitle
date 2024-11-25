@@ -154,6 +154,10 @@ if(params.get('showplayback')=="false"){
 	document.getElementById('progress').style.display='none';
 	document.querySelector('.progress-back').style.display='none';
 }
+if(params.get('showstatus')=="false"){
+	document.getElementById('status').style.display='none';
+	document.querySelector('.now-playing .bottom').style.gap='0';
+}
 if(params.has('cssprops')){
 	const props = params.get('cssprops');
 	for(let prop of props.split(';')){
