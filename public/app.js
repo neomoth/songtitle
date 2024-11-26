@@ -188,6 +188,11 @@ if(params.get('dropshadow')=="true"){
 	status.style.filter='drop-shadow(2px 2px 2px white) invert(100%)';
 	cover.style.filter='drop-shadow(2px 2px 2px black)';
 }
+if(params.has('clearcookies')){
+	document.cookie = 'accessToken=""';
+	document.cookie = 'refreshToken=""';
+	window.location.refresh();
+}
 if(params.has('cssprops')){
 	const props = params.get('cssprops');
 	for(let prop of props.split(';')){
