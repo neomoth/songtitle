@@ -43,6 +43,7 @@ function startScrollAnimation(element, container){
 	const speed = 0.1;
 	const pauseDuration = 1000;
 	let isPaused = true;
+	let timeouts = [];
 
 	setTimeout(()=>{
 		isPaused = false;
@@ -55,26 +56,29 @@ function startScrollAnimation(element, container){
 		const deltaTime = timestamp - lastTimestamp
 		lastTimestamp = timestamp;
 
-		if(!isPaused){
+		if(!isPaused && allowAnimation){
 			position-=speed * deltaTime;
 
 			const textRightEdge = element.getBoundingClientRect().right;
 			const containerRightEdge = container.getBoundingClientRect().right;
 
-			if (textRightEdge <= containerRightEdge){
+			if (textRightEdge <= containerRightEdge && !isPaused && allowAnimation){
 				isPaused = true;
-				setTimeout(()=>{
+				timeouts.push(setTimeout(()=>{
 					position=0;
-					setTimeout(()=>{
+					timeouts.push(setTimeout(()=>{
 						isPaused = false;
 						startTime = timestamp;
-					}, pauseDuration);
-				}, pauseDuration);
+					}, pauseDuration));
+				}, pauseDuration));
 			}
 
 			element.style.transform = `translateX(${position}px)`
 		}
 		if(allowAnimation) requestAnimationFrame(animateScroll);
+		else for(let timeout in timeouts){
+			clearTimeout(timeout);
+		}
 	}
 	requestAnimationFrame(animateScroll);
 }
