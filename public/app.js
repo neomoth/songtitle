@@ -101,7 +101,8 @@ function fetchNowPlaying(){
 					const songContainer = document.getElementById('songContainer');
 					if(title.offsetWidth>songContainer.offsetWidth) {
 						startScrollAnimation(title, songContainer);
-						if (settings.doFadeOut||settings.doDropShadow) title.style.width = "calc(100% + 40px)";
+						if (settings.doDropShadow) title.style.width = `${title.offsetWidth+5}px`;
+						if (settings.doFadeOut) title.style.width = `${title.offsetWidth+32}px`;
 					}
 				}
 				if(artist.innerText!=oldartist) {
@@ -109,7 +110,8 @@ function fetchNowPlaying(){
 					const artistContainer = document.getElementById('artistContainer');
 					if(artist.offsetWidth>artistContainer.offsetWidth) {
 						startScrollAnimation(artist, artistContainer);
-						if (settings.doFadeOut||settings.doDropShadow) artist.style.width = "calc(100% + 40px)";
+						if (settings.doDropShadow) artist.style.width = `${artist.offsetWidth+5}px`;
+						if (settings.doFadeOut) artist.style.width = `${artist.offsetWidth+32}px`;
 					}
 				}
 			} else{
