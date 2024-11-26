@@ -4,13 +4,21 @@ console.log(isLoggedIn)
 const CLIENT_ID = '198a9772670340b198435b615c0f3e19';
 const REDIRECT_URI = 'https://song.moth.li/oauth';
 const SCOPES = 'user-read-currently-playing user-read-playback-state';
-
+const title = document.getElementById('songTitle');
+const artist = document.getElementById('songArtist');
+const progressBar = document.getElementById('progress');
+const status = document.getElementById('status');
+const cover = document.getElementById('cover');
+const progressBack = document.getElementById('progressBack');
 let settings = {
-	hideOnPause: false
+	hideOnPause: false,
+	useLocalhost: false,
+	doFadeOut: false,
+	doDropShadow: false
 }
 
 document.getElementById("loginButton").addEventListener("click", ()=>{
-	const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`
+	const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(settings.useLocalHost ? "http://localhost:7934/oauth" : REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`
 	window.location.href=authUrl;
 });
 
@@ -76,12 +84,7 @@ function fetchNowPlaying(){
 		.then((response)=>response.json())
 		.then((data)=>{
 			if(data.song && data.artist){
-				const title = document.getElementById('songTitle');
-				const artist = document.getElementById('songArtist');
 				const progress = (data.progress/data.duration) * 100;
-				const progressBar = document.getElementById('progress');
-				const status = document.getElementById('status');
-				const cover = document.getElementById('cover');
 				const oldtitle = title.innerText;
 				const oldartist = artist.innerText;
 				if (settings.hideOnPause) document.querySelector('.now-playing').style.cssText = data.playing ? "" : "display:none;"
@@ -91,43 +94,35 @@ function fetchNowPlaying(){
 				console.log(data.cover)
 				console.log(data.cover!=null)
 				cover.src = data.cover!=null ? data.cover : "weestspin.gif"
-				progressBar.style.width = `${progress}%`;
-//				const songWidth = title.offsetWidth;
-//				const artistWidth = artist.offsetWidth;
-//				const titleContainerWidth = document.getElementById('songContainer').offsetWidth;
-//				const artistContainerWidth = document.getElementById('artistContainer').offsetWidth;
-//				if (songWidth>titleContainerWidth){
-//					const scrollSpeed = 80;
-//					const duration = (songWidth+titleContainerWidth)/scrollSpeed;
-//					title.style.animation = `scroll-infinite ${duration}s linear infinite forwards`;
-//				}
-//				if (artistWidth>artistContainerWidth){
-//					const scrollSpeed = 100;
-//					const duration = (artistWidth+artistContainerWidth)/scrollSpeed;
-//					artist.style.animation = `scroll-infinite ${duration}s linear infinite forwards`;
-//				}
+				progressBar.style.width = `${progress}%`
 				document.getElementById('songTitle').classList.add('scrolling-text');
-//				document.getElementById('songTitle').classList.add('scrolling-text');
 				if(title.innerText!=oldtitle) {
+					title.style.width = 'auto';
 					const songContainer = document.getElementById('songContainer');
-					if(title.offsetWidth>songContainer.offsetWidth) startScrollAnimation(title, songContainer);
+					if(title.offsetWidth>songContainer.offsetWidth) {
+						startScrollAnimation(title, songContainer);
+						if (settings.doFadeOut||settings.doDropShadow) title.style.width = "calc(100% + 40px)";
+					}
 				}
 				if(artist.innerText!=oldartist) {
+					artist.style.width = 'auto';
 					const artistContainer = document.getElementById('artistContainer');
-					if(artist.offsetWidth>artistContainer.offsetWidth) startScrollAnimation(artist, artistContainer);
+					if(artist.offsetWidth>artistContainer.offsetWidth) {
+						startScrollAnimation(artist, artistContainer);
+						if (settings.doFadeOut||settings.doDropShadow) artist.style.width = "calc(100% + 40px)";
+					}
 				}
 			} else{
-				document.getElementById('progress').style.width='0';
-				document.getElementById('status').src='error.svg';
-				document.getElementById('songTitle').innerText = 'No song currently playing.';
-				document.getElementById('songTitle').classList.remove('scrolling-text');
-				document.getElementById('cover').src = "weestspin.gif";
+				progress.style.width='0';
+				status.src='error.svg';
+				title.innerText = 'No song currently playing.';
+				title.classList.remove('scrolling-text');
+				cover.src = "weestspin.gif";
 				if(settings.hideOnPause) document.querySelector('.now-playing').style.display = 'none';
 				stopAnim();
-//				document.getElementById('titleContainer').classList.add('loading');
-				document.getElementById('songTitle').style.animation='';
-				document.getElementById('songArtist').style.animation='';
-				document.getElementById('songArtist').innerText = '';
+				title.style.animation='';
+				artist.style.animation='';
+				artist.innerText = '';
 			}
 		})
 		.catch((error)=>{
@@ -166,6 +161,24 @@ if(params.get('showstatus')=="false"){
 }
 if(params.get('hideonpause')=="true"){
 	settings.hideOnPause = true;
+}
+if(params.get('uselocalhost')=="true"){
+	settings.useLocalHost = true;
+}
+if(params.get('dofadeout')=="true"){
+	console.log("penis");
+	settings.doFadeOut = true;
+	document.querySelector('.now-playing .top').style.cssText += 'mask-image:linear-gradient(90deg, #000 88%, transparent);';
+}
+if(params.get('dropshadow')=="true"){
+	settings.doDropShadow=true;
+	title.style.textShadow="2px 2px 4px black, -2px -2px 4px black, 2px -2px 4px black, -2px 2px 4px black";
+	title.style.paddingLeft="3px";
+	artist.style.textShadow="2px 2px 4px black, -2px -2px 4px black, 2px -2px 4px black, -2px 2px 4px black";
+	artist.style.paddingLeft="3px";
+	progressBack.style.filter='drop-shadow(2px 2px 2px black)';
+	status.style.filter='drop-shadow(2px 2px 2px white) invert(100%)';
+	cover.style.filter='drop-shadow(2px 2px 2px black)';
 }
 if(params.has('cssprops')){
 	const props = params.get('cssprops');

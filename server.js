@@ -16,7 +16,7 @@ app.use(express.static('public'));
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const REDIRECT_URI = 'https://song.moth.li/oauth';
+const REDIRECT_URI = process.env.REDIRECT_URI;
 
 app.get('/', async (req,res)=>{
 	res.sendFile('./public/index.html')

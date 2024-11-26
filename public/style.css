@@ -40,6 +40,7 @@ body{
 	flex-direction:row;
 	align-items:center;
 	gap:8px;
+/*	position:relative;*/
 }
 .now-playing .bottom img{
 	-webkit-filter:invert(100%);
@@ -53,15 +54,21 @@ body{
 }
 #progress{
 	background-color:white;
+	position:relative;
 	height:4px;
+}
+.progress-container{
+	display:flex;
+	align-items:center;
+	position:relative;
+	width:100%;
 }
 .progress-back{
 	background-color:#777;
 	height:4px;
 	width:100%;
-	position:relative;
+	position:absolute;
 	z-index:-1;
-	margin-left:-8px;
 }
 .artist{
 	font-size: 1.2em;
@@ -109,7 +116,8 @@ body{
 .scrolling-text-container {
     width: var(--song-info-safe-area);
     height: auto;
-    overflow-x: hidden;
+    overflow-y: visible;
+    overflow-x: clip;
     position: relative;
 }
 #songContainer{
