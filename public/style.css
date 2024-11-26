@@ -14,8 +14,9 @@
 body{
 	font-family: var(--font);
 	display: flex;
-	justify-content: center;
+/*	justify-content: center;
 	align-items: center;
+*/
 	height: 100vh;
 	margin: 0;
 	background-color: var(--bg-color);
@@ -49,7 +50,7 @@ body{
 	width:20px;
 }
 .song-title{
-	font-size: 2em;
+	font-size: var(--song-title-size);
 	font-weight: bold;
 }
 #progress{
@@ -130,14 +131,14 @@ body{
 .scrolling-text {
     white-space: nowrap;
     display: inline-block;
-    font-size: 1.5em;
+    font-size: var(--song-title-size);
     font-weight: bold;
     white-space: nowrap;
 }
 .scrolling-artist {
 	white-space: nowrap;
 	display: inline-block;
-	font-size: 1.2em;
+	font-size: var(--song-artist-size);
 	text-align: var(--artist-text-align);
 	white-space: nowrap;
 }

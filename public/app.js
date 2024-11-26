@@ -94,6 +94,7 @@ function fetchNowPlaying(){
 				if (settings.hideOnPause) document.querySelector('.now-playing').style.cssText = data.playing ? "" : "display:none;"
 				title.innerText = data.song;
 				artist.innerText = data.artist;
+				artist.style.display = '';
 				status.src = data.playing ? "play.svg" : "pause.svg"
 				console.log(data.cover)
 				console.log(data.cover!=null)
@@ -129,6 +130,7 @@ function fetchNowPlaying(){
 				title.style.animation='';
 				artist.style.animation='';
 				artist.innerText = '';
+				artist.style.display='none';
 			}
 		})
 		.catch((error)=>{
