@@ -5,6 +5,10 @@ const CLIENT_ID = '198a9772670340b198435b615c0f3e19';
 const REDIRECT_URI = 'https://song.moth.li/oauth';
 const SCOPES = 'user-read-currently-playing user-read-playback-state';
 
+let settings = {
+	hideOnPause: false
+}
+
 document.getElementById("loginButton").addEventListener("click", ()=>{
 	const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`
 	window.location.href=authUrl;
@@ -80,6 +84,7 @@ function fetchNowPlaying(){
 				const cover = document.getElementById('cover');
 				const oldtitle = title.innerText;
 				const oldartist = artist.innerText;
+				if (settings.hideOnPause) document.querySelector('.now-playing').style.cssText = data.playing ? "" : "display:none;"
 				title.innerText = data.song;
 				artist.innerText = data.artist;
 				status.src = data.playing ? "play.svg" : "pause.svg"
@@ -117,6 +122,7 @@ function fetchNowPlaying(){
 				document.getElementById('songTitle').innerText = 'No song currently playing.';
 				document.getElementById('songTitle').classList.remove('scrolling-text');
 				document.getElementById('cover').src = "weestspin.gif";
+				if(settings.hideOnPause) document.querySelector('.now-playing').style.display = 'none';
 				stopAnim();
 //				document.getElementById('titleContainer').classList.add('loading');
 				document.getElementById('songTitle').style.animation='';
@@ -157,6 +163,9 @@ if(params.get('showplayback')=="false"){
 if(params.get('showstatus')=="false"){
 	document.getElementById('status').style.display='none';
 	document.querySelector('.now-playing .bottom').style.gap='0';
+}
+if(params.get('hideonpause')=="true"){
+	settings.hideOnPause = true;
 }
 if(params.has('cssprops')){
 	const props = params.get('cssprops');
