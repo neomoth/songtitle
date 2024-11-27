@@ -96,32 +96,47 @@ document.getElementById("loginButton").addEventListener("click", ()=>{
 	window.location.href=authUrl;
 });
 
-let allowAnimation = true;
+//let allowAnimation = true;
 
-function stopAnim(){
-	allowAnimation = false;
-	document.getElementById('songTitle').style.transform = 'translateX(0)'
-	document.getElementById('songArtist').style.transform = 'translateX(0)'
+let anims = {
+	titleanim:null,
+	artistanim:null
 }
 
-function startScrollAnimation(element, container){
+function stopAnim(anim){
+//	allowAnimation = false;
+	if(anim==null) return;
+	cancelAnimationFrame(anim.id);
+	anim.element.style.transform = 'translateX(0)';
+	for(let timeout of anim.timeouts){
+		clearTimeout(timeout);
+	}
+	anim = null;
+}
+
+function startScrollAnimation(element, container, anim){
 	const containerWidth = container.offsetWidth;
 	const textWidth = element.offsetWidth;
 
 	element.style.transform = `translateX(0)`;
 
-	allowAnimation = true;
+	anim = {
+		timeouts:[],
+		id:null,
+		element:element
+	}
+
 	let lastTimestamp = 0;
 	let startTime;
 	let position = 0;
 	const speed = 0.1;
 	const pauseDuration = 1000;
 	let isPaused = true;
-	let timeouts = [];
+	//let timeouts = [];
 
-	setTimeout(()=>{
+	anim.timeouts.push(setTimeout(()=>{
 		isPaused = false;
-	}, 1000);
+	}, 1000));
 
 	function animateScroll(timestamp){
 		if(!lastTimestamp) lastTimestamp = timestamp;
@@ -130,17 +145,17 @@ function startScrollAnimation(element, container){
 		const deltaTime = timestamp - lastTimestamp
 		lastTimestamp = timestamp;
 
-		if(!isPaused && allowAnimation){
+		if(!isPaused){
 			position-=speed * deltaTime;
 
 			const textRightEdge = element.getBoundingClientRect().right;
 			const containerRightEdge = container.getBoundingClientRect().right;
 
-			if (textRightEdge <= containerRightEdge && !isPaused && allowAnimation){
+			if (textRightEdge <= containerRightEdge && !isPaused){
 				isPaused = true;
-				timeouts.push(setTimeout(()=>{
+				anim.timeouts.push(setTimeout(()=>{
 					position=0;
-					timeouts.push(setTimeout(()=>{
+					anim.timeouts.push(setTimeout(()=>{
 						isPaused = false;
 						startTime = timestamp;
 					}, pauseDuration));
@@ -149,12 +164,10 @@ function startScrollAnimation(element, container){
 
 			element.style.transform = `translateX(${position}px)`
 		}
-		if(allowAnimation) requestAnimationFrame(animateScroll);
-		else for(let timeout in timeouts){
-			clearTimeout(timeout);
-		}
+		anim.id = requestAnimationFrame(animateScroll);
 	}
-	requestAnimationFrame(animateScroll);
+	anim.id = requestAnimationFrame(animateScroll);
+	return anim;
 }
 
 function fetchNowPlaying(){
@@ -175,22 +188,23 @@ function fetchNowPlaying(){
 				cover.src = data.cover!=null ? data.cover : "/assets/weestspin.gif"
 				progressBar.style.width = `${progress}%`
 				document.getElementById('songTitle').classList.add('scrolling-text');
+//				if(title.innerText!=oldtitle||artist.innerText!=oldartist) stopAnim();
 				if(title.innerText!=oldtitle) {
-					stopAnim();
+					stopAnim(anims.titleanim);
 					title.style.width = 'auto';
 					const songContainer = document.getElementById('songContainer');
 					if(title.offsetWidth>songContainer.offsetWidth) {
-						startScrollAnimation(title, songContainer);
+						anims.titleanim = startScrollAnimation(title, songContainer);
 						if (settings.doDropShadow) title.style.width = `${title.offsetWidth+5}px`;
 						if (settings.doFadeOut) title.style.width = `${title.offsetWidth+32}px`;
 					}
 				}
 				if(artist.innerText!=oldartist) {
-					stopAnim();
+					stopAnim(anims.artistanim);
 					artist.style.width = 'auto';
 					const artistContainer = document.getElementById('artistContainer');
 					if(artist.offsetWidth>artistContainer.offsetWidth) {
-						startScrollAnimation(artist, artistContainer);
+						anims.artistanim = startScrollAnimation(artist, artistContainer);
 						if (settings.doDropShadow) artist.style.width = `${artist.offsetWidth+5}px`;
 						if (settings.doFadeOut) artist.style.width = `${artist.offsetWidth+32}px`;
 					}
@@ -202,7 +216,8 @@ function fetchNowPlaying(){
 				title.classList.remove('scrolling-text');
 				cover.src = "/assets/weestspin.gif";
 				if(settings.hideOnPause) document.querySelector('.now-playing').style.display = 'none';
-				stopAnim();
+				stopAnim(anims.titleanim);
+				stopAnim(anims.artistanim);
 				title.style.animation='';
 				artist.style.animation='';
 				artist.innerText = '';
@@ -223,7 +238,11 @@ function refreshToken(){
 		});
 }
 
-setInterval(fetchNowPlaying, 5000);
+let interval = setInterval(()=>{
+	console.log("running fetch");
+	fetchNowPlaying();
+	console.log("ran fetch");
+}, 5000);
 fetchNowPlaying();
 
 setInterval(refreshToken, 30*60*1000);
