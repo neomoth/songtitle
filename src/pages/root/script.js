@@ -114,13 +114,13 @@ function stopAnim(anim){
 	anim = null;
 }
 
-function startScrollAnimation(element, container, anim){
+function startScrollAnimation(element, container){
 	const containerWidth = container.offsetWidth;
 	const textWidth = element.offsetWidth;
 
 	element.style.transform = `translateX(0)`;
 
-	anim = {
+	let animdata = {
 		timeouts:[],
 		id:null,
 		element:element
@@ -134,7 +134,7 @@ function startScrollAnimation(element, container, anim){
 	let isPaused = true;
 	//let timeouts = [];
 
-	anim.timeouts.push(setTimeout(()=>{
+	animdata.timeouts.push(setTimeout(()=>{
 		isPaused = false;
 	}, 1000));
 
@@ -153,9 +153,9 @@ function startScrollAnimation(element, container, anim){
 
 			if (textRightEdge <= containerRightEdge && !isPaused){
 				isPaused = true;
-				anim.timeouts.push(setTimeout(()=>{
+				animdata.timeouts.push(setTimeout(()=>{
 					position=0;
-					anim.timeouts.push(setTimeout(()=>{
+					animdata.timeouts.push(setTimeout(()=>{
 						isPaused = false;
 						startTime = timestamp;
 					}, pauseDuration));
@@ -164,10 +164,10 @@ function startScrollAnimation(element, container, anim){
 
 			element.style.transform = `translateX(${position}px)`
 		}
-		anim.id = requestAnimationFrame(animateScroll);
+		animdata.id = requestAnimationFrame(animateScroll);
 	}
-	anim.id = requestAnimationFrame(animateScroll);
-	return anim;
+	animdata.id = requestAnimationFrame(animateScroll);
+	return animdata;
 }
 
 function fetchNowPlaying(){
