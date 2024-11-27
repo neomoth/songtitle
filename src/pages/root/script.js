@@ -1,3 +1,77 @@
+//import ReconnectingWebSocket from 'reconnecting-websocket';
+
+//im lazy so im sticking this here fuck you
+//function parseIRC = function(data){
+//	var message = {
+//		raw:data,
+//		tags:{},
+//		prefix:null,
+//		command:null,
+//		params:[]
+//	};
+//	var position=0;
+//	var nextspace=0;
+//
+//	if(data.charCodeAt(0)===64){
+//		var nextspace = data.indexOf(' ');
+//		if(nextspace===-1) return null;
+//		var rawTags = data.slice(1,nextspace).split(';');
+//		for(var i=0;i<rawTags.length;i++){
+//			var tag = rawTags[i];
+//			var pair = tag.split('=');
+//			message.tags[pair[0]]=pair[1] || true;
+//		}
+//		position=nextspace+1;
+//	}
+//
+//	while (data.charCodeAt(position)===32)position++;
+//
+//	if(data.charCodeAt(position)===58){
+//		nextspace = data.indexOf(' ', potision);
+//		if(nextspace===-1) return null;
+//		message.prefix=data.slice(position+1,nextspace);
+//		position=nextspace+1;
+//		while(data.charCodeAt(position)===32)position++;
+//	}
+//
+//	nextspace = data.indexOf(' ',position);
+//
+//	if(nextspace===-1){
+//		if(data.length>position){
+//			message.command=data.slice(position);
+//			return message;
+//		}
+//		return null;
+//	}
+//
+//	message.command = data.slice(position, nextspace);
+//	position = nextspace+1;
+//
+//	while(position<data.length){
+//		nextspace = data.indexOf(' ',position);
+//		if data.charCodeAt(position)===58){
+//			message.params.push(data.slice(position+1));
+//			break;
+//		}
+//		if(nextspace!==-1){
+//			message.params.push(data.slice(position,nextspace));
+//			position=nextspace+1;
+//
+//			while(data.charCodeAt(position)===32)position++;
+//			continue;
+//		}
+//
+//		if (nextspace===-1){
+//			message.params.push(data.slice(position));
+//			break;
+//		}
+//	}
+//	return message;
+//}
+
+
+
+
 const isLoggedIn = document.cookie.includes('accessToken');
 if(!isLoggedIn) document.getElementById('loginModal').style.display="flex";
 console.log(isLoggedIn)
@@ -95,13 +169,14 @@ function fetchNowPlaying(){
 				title.innerText = data.song;
 				artist.innerText = data.artist;
 				artist.style.display = '';
-				status.src = data.playing ? "play.svg" : "pause.svg"
+				status.src = data.playing ? "/assets/play.svg" : "/assets/pause.svg"
 				console.log(data.cover)
 				console.log(data.cover!=null)
-				cover.src = data.cover!=null ? data.cover : "weestspin.gif"
+				cover.src = data.cover!=null ? data.cover : "/assets/weestspin.gif"
 				progressBar.style.width = `${progress}%`
 				document.getElementById('songTitle').classList.add('scrolling-text');
 				if(title.innerText!=oldtitle) {
+					stopAnim();
 					title.style.width = 'auto';
 					const songContainer = document.getElementById('songContainer');
 					if(title.offsetWidth>songContainer.offsetWidth) {
@@ -111,6 +186,7 @@ function fetchNowPlaying(){
 					}
 				}
 				if(artist.innerText!=oldartist) {
+					stopAnim();
 					artist.style.width = 'auto';
 					const artistContainer = document.getElementById('artistContainer');
 					if(artist.offsetWidth>artistContainer.offsetWidth) {
@@ -121,10 +197,10 @@ function fetchNowPlaying(){
 				}
 			} else{
 				progress.style.width='0';
-				status.src='error.svg';
+				status.src='/assets/error.svg';
 				title.innerText = 'No song currently playing.';
 				title.classList.remove('scrolling-text');
-				cover.src = "weestspin.gif";
+				cover.src = "/assets/weestspin.gif";
 				if(settings.hideOnPause) document.querySelector('.now-playing').style.display = 'none';
 				stopAnim();
 				title.style.animation='';
@@ -204,3 +280,75 @@ if(params.has('cssprops')){
 		document.body.style.cssText+=`--${key}:${value};`
 	}
 }
+
+let ws;
+
+function connectWebSocket(){
+	const protocol = location.protocol=='https:'?'wss':'ws';
+	const port = location.port?':7395':'/ws';
+	ws = new WebSocket(`${protocol}://${window.location.hostname}${port}`);
+	ws.onopen=()=>{
+		console.log('connected to websocket');
+		ws.send(JSON.stringify({
+			protocol:'SET_IDENTIFIER',
+			data:params.has('identifier')?params.get('identifier'):undefined
+		}));
+	}
+	ws.onmessage=(msg)=>{
+		console.log(msg.data);
+	}
+	ws.onclose=()=>{
+		setTimeout(connectWebSocket,1000);
+	}
+	ws.onerror=(err)=>{
+		console.error(err);
+	}
+}
+//connectWebSocket();
+
+
+//const socket = new ReconnectingWebSocket('wss://irc-ws.chat.twitch.tv', 'irc', {reconnectInterval: 2000});
+//socket.onopen=async()=>{
+//	console.log('connecting to channel');
+//	socket.send('PASS bla\r\n');
+//	socket.send('NICK jistinfan' + Math.floor(Math.random()*99999)+'\r\n');
+//	socket.send('CAP REQ :twitch.tv/commands twitch.tv/tags\r\n');
+//	socket.send('JOIN #neomothdev\r\n');
+//	console.log('connected.');
+//};
+//socket.onclose=()=>{
+//	console.log('disconnected from channel');
+//};
+//socket.onmessage=(data)=>{
+//	console.log(data);
+//};
+//socket.onerror=(err)=>{
+//	console.error(err);
+//};
+//	data.data.split('\r\n').forEach(line=>{
+//		if(!line) return;
+//		let message = parseIRC(line);
+//		if(!message.command) return;
+//
+//		switch(message.command){
+//			case "PING": return socket.send('PONG ' + message.params[0]);
+//			case "JOIN": return console.log('joined channel');
+//			case "PRIVMSG":
+//				if (message.params[0]!=='#neomothdev'||!message.params[1])return;
+//				return parseCommand(message,false);
+//		}
+//	});
+//};
+//
+//function parseCommand(message, defaultToCurrentChannel = true){
+//	let nick = message.prefix.split('@')[0].split('!')[0];
+//	let text = message.params[1];
+//
+//	let channelParamMatch = text.match(/ -c ([\S\d_]+)/);
+//	if (channelParamMatch){
+//		text=text.substr(0, channelParamMatch.index)
+//			+ text.substr(channelParamMatch.index + channelParamMatch[0].length);
+//		let channelParam ( (channelParamMatch||[])[1]||(defaultToCurrentChannel ?
+//	}
+//}
+

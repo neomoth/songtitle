@@ -4,22 +4,54 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const {encode} = require('url-safe-base64');
+const path = require('path');
+//const ReconnectingWebSocket = require('reconnecting-websocket');
+const WebSocket = require('ws');
+const readline = require('readline');
+
+const wss = new WebSocket.Server({port:7395});
+
+function heartbeat(){
+	this.isAlive = true;
+}
+wss.on('connection', (ws)=>{
+	console.log('connection open');
+	ws.isAlive = true;
+	ws.on('pong', heartbeat);
+	ws.on('message', (message)=>{
+		switch(message.protocol){
+			case "SET_IDENTIFIER":
+				ws.identifier = message.data;
+				console.log(message.data);
+				return ws.send("got it");
+		}
+	});
+	ws.on('close', ()=>{
+		console.log('connection closed');
+	});
+	ws.on('error', (err)=>{
+		console.info('encountered an error, likely a malformed ws message.');
+		console.error(err);
+	});
+});
 
 dotenv.config();
 
 const app = express();
 const port = 7394;
 
+app.locals.wss = wss;
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(express.static('public'));
+app.use(express.static('build'));
+app.use('/assets', express.static(path.join(__dirname, 'src/assets')));
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 
 app.get('/', async (req,res)=>{
-	res.sendFile('./public/index.html')
+	res.sendFile(path.join(__dirname, 'build', 'root/index.html'))
 });
 
 app.get('/oauth', async (req,res)=>{
@@ -136,6 +168,34 @@ app.get('/api/nowplaying', async (req,res)=>{
 //	}
 //});
 
-app.listen(port, () => {
-	console.log(`Server running on port ${port}`);
-});
+function prompt(){
+	const rl = readline.createInterface({input:process.stdin,output:process.stdout});
+	rl.question("> ", async (cmd)=>{
+		rl.close();
+		await parseCommand(cmd);
+		prompt();
+	});
+}
+
+async function start(){
+	await app.listen(port, () => {
+		console.log(`Server running on port ${port}`);
+	});
+	prompt();
+}
+
+function parseCommand(cmd){
+	const args = cmd.split(' ').slice(1);
+	cmd = cmd.split(' ')[0];
+	console.log(cmd);
+	console.log(args);
+	switch(cmd){
+		case "listws":
+			for(let ws in wss.clients){
+				console.log(ws);
+			}
+	}
+}
+
+start();
+

@@ -1,0 +1,145 @@
+:root{
+	--font: Arial, sans-serif;
+	--bg-color: #1c1c1c;
+	--font-color: white;
+	--cover-art-width: 64px;
+	--cover-art-height: 64px;
+	--song-title-size: 1.5em;
+	--song-artist-size: 1.2em;
+	--song-info-safe-area: 300px;
+	--global-text-align: center;
+	--song-text-align: left;
+	--artist-text-align: left;
+}
+body{
+	font-family: var(--font);
+	display: flex;
+/*	justify-content: center;
+	align-items: center;
+*/
+	height: 100vh;
+	margin: 0;
+	background-color: var(--bg-color);
+	color: var(--font-color);
+}
+.now-playing{
+	/*text-align: center;*/
+}
+.now-playing .top{
+	display:flex;
+	flex-direction:row;
+	align-items:center;
+	text-align: var(--global-text-align);
+	gap: 8px;
+}
+.now-playing .top img{
+	height:var(--cover-art-height);
+	width:var(--cover-art-width);
+}
+.now-playing .bottom{
+	display:flex;
+	flex-direction:row;
+	align-items:center;
+	gap:8px;
+/*	position:relative;*/
+}
+.now-playing .bottom img{
+	-webkit-filter:invert(100%);
+	filter:invert(100%);
+	height:20px;
+	width:20px;
+}
+.song-title{
+	font-size: var(--song-title-size);
+	font-weight: bold;
+}
+#progress{
+	background-color:white;
+	position:relative;
+	height:4px;
+}
+.progress-container{
+	display:flex;
+	align-items:center;
+	position:relative;
+	width:100%;
+}
+.progress-back{
+	background-color:#777;
+	height:4px;
+	width:100%;
+	position:absolute;
+	z-index:-1;
+}
+.artist{
+	font-size: 1.2em;
+	margin-top: 5px;
+}
+.loading{
+	text-align: center;
+	justify-content: center;
+	align-items:center;
+}
+.modal{
+	display:none;
+	position:fixed;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	background: rgba(0,0,0,0.8);
+	justify-content:center;
+	align-items:center;
+}
+.modal-content{
+	background:#2c2c2c;
+	color:white;
+	padding:20px;
+	border-radius:5px;
+	text-align: center;
+	max-width:400px;
+}
+.modal-content h2{
+	margin-bottom: 15px;
+}
+.modal-content button{
+	background: #1db954;
+	color:white;
+	border:none;
+	padding:10px 20px;
+	border-radius:5px;
+	cursor:pointer;
+}
+.modal-content button:hover{
+	background: #148c3b;
+}
+
+.scrolling-text-container {
+    width: var(--song-info-safe-area);
+    height: auto;
+    overflow-y: visible;
+    overflow-x: clip;
+    position: relative;
+}
+#songContainer{
+    text-align: var(--song-text-align);
+}
+#artistContainer{
+    text-align: var(--artist-text-align);
+}
+
+.scrolling-text {
+    white-space: nowrap;
+    display: inline-block;
+    font-size: var(--song-title-size);
+    font-weight: bold;
+    white-space: nowrap;
+}
+.scrolling-artist {
+	white-space: nowrap;
+	display: inline-block;
+	font-size: var(--song-artist-size);
+	text-align: var(--artist-text-align);
+	white-space: nowrap;
+}
+
