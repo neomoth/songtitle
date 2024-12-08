@@ -88,7 +88,8 @@ let settings = {
 	hideOnPause: false,
 	useLocalhost: false,
 	doFadeOut: false,
-	doDropShadow: false
+	doDropShadow: false,
+	loadimage: '/assets/weestspin.gif'
 }
 
 document.getElementById("loginButton").addEventListener("click", ()=>{
@@ -185,7 +186,7 @@ function fetchNowPlaying(){
 				status.src = data.playing ? "/assets/play.svg" : "/assets/pause.svg"
 				console.log(data.cover)
 				console.log(data.cover!=null)
-				cover.src = data.cover!=null ? data.cover : "/assets/weestspin.gif"
+				cover.src = data.cover!=null ? data.cover : settings.loadimage
 				progressBar.style.width = `${progress}%`
 				document.getElementById('songTitle').classList.add('scrolling-text');
 //				if(title.innerText!=oldtitle||artist.innerText!=oldartist) stopAnim();
@@ -214,7 +215,7 @@ function fetchNowPlaying(){
 				status.src='/assets/error.svg';
 				title.innerText = 'No song currently playing.';
 				title.classList.remove('scrolling-text');
-				cover.src = "/assets/weestspin.gif";
+				cover.src = settings.loadimage;
 				if(settings.hideOnPause) document.querySelector('.now-playing').style.display = 'none';
 				stopAnim(anims.titleanim);
 				stopAnim(anims.artistanim);
@@ -269,9 +270,11 @@ if(params.get('uselocalhost')=="true"){
 	settings.useLocalHost = true;
 }
 if(params.get('dofadeout')=="true"){
-	console.log("penis");
 	settings.doFadeOut = true;
 	document.querySelector('.now-playing .top').style.cssText += 'mask-image:linear-gradient(90deg, #000 88%, transparent);';
+}
+if(params.has('loadimage')){
+	settings.loadimage = params.get('loadimage');
 }
 if(params.get('dropshadow')=="true"){
 	settings.doDropShadow=true;
