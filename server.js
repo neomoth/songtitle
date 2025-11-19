@@ -8,6 +8,7 @@ const path = require('path');
 //const ReconnectingWebSocket = require('reconnecting-websocket');
 const WebSocket = require('ws');
 const readline = require('readline');
+const https = require('https');
 const dns = require('dns');
 
 // Force IPv4 and custom DNS resolution
