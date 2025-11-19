@@ -67,8 +67,8 @@ app.get('/oauth', async (req,res)=>{
 				grant_type: 'authorization_code',
 				code: code,
 				redirect_uri: REDIRECT_URI,
-				client_id: CLIENT_ID,
-				client_secret: CLIENT_SECRET,
+				// client_id: CLIENT_ID,
+				// client_secret: CLIENT_SECRET,
 			}),
 			{
 				headers: {
