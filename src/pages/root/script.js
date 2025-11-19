@@ -93,7 +93,7 @@ let settings = {
 }
 
 document.getElementById("loginButton").addEventListener("click", ()=>{
-	const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(settings.useLocalHost ? "http://localhost:7934/oauth" : REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`
+	const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(settings.useLocalHost ? "http://localhost:7394/oauth" : REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`
 	window.location.href=authUrl;
 });
 
