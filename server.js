@@ -73,7 +73,7 @@ app.get('/oauth', async (req,res)=>{
 			{
 				headers: {
 					'Content-Type': 'application/x-www-form-urlencoded',
-//					'Authorization': `Basic ${encode(text)}`
+					'Authorization': `Basic ${encode(text)}`
 				}
 			}
 		);
