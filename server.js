@@ -8,6 +8,10 @@ const path = require('path');
 //const ReconnectingWebSocket = require('reconnecting-websocket');
 const WebSocket = require('ws');
 const readline = require('readline');
+const dns = require('dns');
+
+// Force IPv4 and custom DNS resolution
+dns.setDefaultResultOrder('ipv4first');
 
 const wss = new WebSocket.Server({port:7395});
 
@@ -55,48 +59,37 @@ app.get('/', async (req,res)=>{
 });
 
 app.get('/oauth', async (req,res)=>{
-    console.log("OAuth callback received");
-    const code = req.query.code;
-    console.log("Code received:", code ? "YES" : "NO");
-    
-    // Test basic connectivity first
     try {
-        console.log("Testing connectivity to Spotify...");
-        const testResponse = await axios.get('https://accounts.spotify.com');
-        console.log("Connectivity test passed");
-    } catch (error) {
-        console.error("Basic connectivity test failed:", error.message);
-    }
+        // Create a custom agent that forces IPv4 and ignores cert issues
+        const agent = new https.Agent({
+            family: 4, // Force IPv4
+            rejectUnauthorized: false, // Bypass SSL cert verification
+            keepAlive: true,
+            timeout: 10000
+        });
 
-    try {
         const requestBody = new URLSearchParams({
             grant_type: 'authorization_code',
-            code: code,
+            code: req.query.code,
             redirect_uri: REDIRECT_URI,
             client_id: CLIENT_ID,
             client_secret: CLIENT_SECRET,
         }).toString();
 
-        console.log("Request body length:", requestBody.length);
-        console.log("Redirect URI:", REDIRECT_URI);
-        console.log("Client ID:", CLIENT_ID ? "Set" : "Not set");
+        console.log("Making request with forced IPv4...");
         
-        // Try with axios first since it's more reliable in Node.js
         const tokenResponse = await axios.post(
             'https://accounts.spotify.com/api/token',
             requestBody,
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'User-Agent': 'Mozilla/5.0 ( compatible )'
                 },
-                timeout: 10000,
-                // Add proxy settings if needed
-                // proxy: false // explicitly disable proxy if that's the issue
+                httpsAgent: agent,
+                timeout: 15000
             }
         );
 
-        console.log("Token exchange successful");
         const { access_token, refresh_token } = tokenResponse.data;
         
         res.cookie('accessToken', access_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
@@ -104,23 +97,7 @@ app.get('/oauth', async (req,res)=>{
         res.redirect('/');
         
     } catch (error) {
-        console.error('Full error details:');
-        console.error('- Message:', error.message);
-        console.error('- Code:', error.code);
-        
-        if (error.response) {
-            console.error('- Status:', error.response.status);
-            console.error('- Data:', error.response.data);
-            console.error('- Headers:', error.response.headers);
-        } else if (error.request) {
-            console.error('- No response received');
-            console.error('- Request details:', {
-                url: error.config?.url,
-                method: error.config?.method,
-                data: error.config?.data
-            });
-        }
-        
+        console.error('Error with custom agent:', error.message);
         res.status(500).json({error: 'Failed to exchange token' });
     }
 });
