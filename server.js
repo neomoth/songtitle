@@ -55,56 +55,74 @@ app.get('/', async (req,res)=>{
 });
 
 app.get('/oauth', async (req,res)=>{
-	console.log("TEST")
-	const code = req.query.code;
-	console.log(code);
-	console.log(CLIENT_SECRET);
-	const text = `${CLIENT_ID}:${CLIENT_SECRET}`;
-	console.log(text);
-	try{
-// 		const tokenResponse = await axios.post(
-// 			'https://accounts.spotify.com/api/token',
-// 			new URLSearchParams({
-// 				grant_type: 'authorization_code',
-// 				code: code,
-// 				redirect_uri: REDIRECT_URI,
-// 				client_id: CLIENT_ID,
-// 				client_secret: CLIENT_SECRET,
-// 			}),
-// 			{
-// 				headers: {
-// 					'Content-Type': 'application/x-www-form-urlencoded',
-// //					'Authorization': `Basic ${encode(text)}`
-// 				}
-// 			}
-// 		);
+    console.log("OAuth callback received");
+    const code = req.query.code;
+    console.log("Code received:", code ? "YES" : "NO");
+    
+    // Test basic connectivity first
+    try {
+        console.log("Testing connectivity to Spotify...");
+        const testResponse = await axios.get('https://accounts.spotify.com');
+        console.log("Connectivity test passed");
+    } catch (error) {
+        console.error("Basic connectivity test failed:", error.message);
+    }
 
-// 		const { access_token, refresh_token } = tokenResponse.data;
+    try {
+        const requestBody = new URLSearchParams({
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: REDIRECT_URI,
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+        }).toString();
 
-		const tokenResponse = await fetch('https://accounts.spotify.com/api/token',{
-			headers:{
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			body: new URLSearchParams({
-				grant_type: 'authorization_code',
-				code: code,
-				redirect_uri: REDIRECT_URI,
-				client_id: CLIENT_ID,
-				client_secret: CLIENT_SECRET,
-			}).toString(),
-			method: 'POST'
-		});
+        console.log("Request body length:", requestBody.length);
+        console.log("Redirect URI:", REDIRECT_URI);
+        console.log("Client ID:", CLIENT_ID ? "Set" : "Not set");
+        
+        // Try with axios first since it's more reliable in Node.js
+        const tokenResponse = await axios.post(
+            'https://accounts.spotify.com/api/token',
+            requestBody,
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'User-Agent': 'Mozilla/5.0 ( compatible )'
+                },
+                timeout: 10000,
+                // Add proxy settings if needed
+                // proxy: false // explicitly disable proxy if that's the issue
+            }
+        );
 
-		const data = await tokenResponse.json();
-
-		res.cookie('accessToken', data.access_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
-		res.cookie('refreshToken', data.refresh_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
-		res.redirect('/');
-	} catch (error) {
-		console.error(error);
-		console.error('Error exchanging token:', error.response.data);
-		res.status(500).json({error: 'Failed to exchange token' });
-	}
+        console.log("Token exchange successful");
+        const { access_token, refresh_token } = tokenResponse.data;
+        
+        res.cookie('accessToken', access_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
+        res.cookie('refreshToken', refresh_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
+        res.redirect('/');
+        
+    } catch (error) {
+        console.error('Full error details:');
+        console.error('- Message:', error.message);
+        console.error('- Code:', error.code);
+        
+        if (error.response) {
+            console.error('- Status:', error.response.status);
+            console.error('- Data:', error.response.data);
+            console.error('- Headers:', error.response.headers);
+        } else if (error.request) {
+            console.error('- No response received');
+            console.error('- Request details:', {
+                url: error.config?.url,
+                method: error.config?.method,
+                data: error.config?.data
+            });
+        }
+        
+        res.status(500).json({error: 'Failed to exchange token' });
+    }
 });
 
 app.get('/api/refreshtoken', async (req,res)=>{
