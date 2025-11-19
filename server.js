@@ -14,6 +14,14 @@ const dns = require('dns');
 // Force IPv4 and custom DNS resolution
 dns.setDefaultResultOrder('ipv4first');
 
+// Create reusable HTTPS agent for all Spotify API calls
+const spotifyAgent = new https.Agent({
+    family: 4, // Force IPv4
+    rejectUnauthorized: false, // Bypass SSL cert verification
+    keepAlive: true,
+    timeout: 10000
+});
+
 const wss = new WebSocket.Server({port:7395});
 
 function heartbeat(){
@@ -61,14 +69,6 @@ app.get('/', async (req,res)=>{
 
 app.get('/oauth', async (req,res)=>{
     try {
-        // Create a custom agent that forces IPv4 and ignores cert issues
-        const agent = new https.Agent({
-            family: 4, // Force IPv4
-            rejectUnauthorized: false, // Bypass SSL cert verification
-            keepAlive: true,
-            timeout: 10000
-        });
-
         const requestBody = new URLSearchParams({
             grant_type: 'authorization_code',
             code: req.query.code,
@@ -86,7 +86,7 @@ app.get('/oauth', async (req,res)=>{
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                httpsAgent: agent,
+                httpsAgent: spotifyAgent,
                 timeout: 15000
             }
         );
@@ -113,7 +113,11 @@ app.get('/api/refreshtoken', async (req,res)=>{
 				client_id: CLIENT_ID,
 				client_secret: CLIENT_SECRET,
 			}),
-			{ headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+			{ 
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                httpsAgent: spotifyAgent,
+                timeout: 15000
+            }
 		);
 
 		const { access_token } = tokenResponse.data;
@@ -136,7 +140,11 @@ app.get('/api/nowplaying', async (req,res)=>{
 	}
 	try{
 		const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
-			headers: { Authorization: `Bearer ${token}` },
+			headers: { 
+                Authorization: `Bearer ${token}` 
+            },
+            httpsAgent: spotifyAgent,
+            timeout: 15000
 		});
 		if (response.status === 204 || response.status > 400) {
 			return res.json({song:null, artist:null, cover:null});
@@ -172,7 +180,11 @@ app.get('/api/nowplaying', async (req,res)=>{
 //				client_id: CLIENT_ID,
 //				client_secret: CLIENT_SECRET,
 //			}),
-//			{headers:{'Content-Type':'application/x-www-form-urlencoded'}}
+//			{
+//                headers: {'Content-Type':'application/x-www-form-urlencoded'},
+//                httpsAgent: spotifyAgent,
+//                timeout: 15000
+//            }
 //		)
 //		res.json(response.data);
 //	} catch (error) {
@@ -211,4 +223,3 @@ function parseCommand(cmd){
 }
 
 start();
-
