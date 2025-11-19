@@ -62,27 +62,43 @@ app.get('/oauth', async (req,res)=>{
 	const text = `${CLIENT_ID}:${CLIENT_SECRET}`;
 	console.log(text);
 	try{
-		const tokenResponse = await axios.post(
-			'https://accounts.spotify.com/api/token',
-			new URLSearchParams({
+// 		const tokenResponse = await axios.post(
+// 			'https://accounts.spotify.com/api/token',
+// 			new URLSearchParams({
+// 				grant_type: 'authorization_code',
+// 				code: code,
+// 				redirect_uri: REDIRECT_URI,
+// 				client_id: CLIENT_ID,
+// 				client_secret: CLIENT_SECRET,
+// 			}),
+// 			{
+// 				headers: {
+// 					'Content-Type': 'application/x-www-form-urlencoded',
+// //					'Authorization': `Basic ${encode(text)}`
+// 				}
+// 			}
+// 		);
+
+// 		const { access_token, refresh_token } = tokenResponse.data;
+
+		const tokenResponse = await fetch('https://accounts.spotify.com/api/token',{
+			headers:{
+				'Content-Type': 'application/x-www-form-urlencoded',
+			},
+			body: new URLSearchParams({
 				grant_type: 'authorization_code',
 				code: code,
 				redirect_uri: REDIRECT_URI,
 				client_id: CLIENT_ID,
 				client_secret: CLIENT_SECRET,
 			}),
-			{
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-//					'Authorization': `Basic ${encode(text)}`
-				}
-			}
-		);
+			method: 'POST'
+		});
 
-		const { access_token, refresh_token } = tokenResponse.data;
+		const data = await tokenResponse.json();
 
-		res.cookie('accessToken', access_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
-		res.cookie('refreshToken', refresh_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
+		res.cookie('accessToken', data.access_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
+		res.cookie('refreshToken', data.refresh_token, {httpOnly: false, secure: true, maxAge:10*365*24*60*60*1000});
 		res.redirect('/');
 	} catch (error) {
 		console.error(error);
