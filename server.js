@@ -91,7 +91,7 @@ app.get('/oauth', async (req,res)=>{
 				redirect_uri: REDIRECT_URI,
 				client_id: CLIENT_ID,
 				client_secret: CLIENT_SECRET,
-			}),
+			}).toString(),
 			method: 'POST'
 		});
 
